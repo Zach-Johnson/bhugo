@@ -65,10 +65,12 @@ Make some changes to an existing note, with hashtags prefixed with the `NOTE_TAG
 
 
 You should see the change reflected in your Hugo content file:
+
 ![](../assets/imgs/bhugo-content.png?raw=true)
 
 
-And a message from Bhugo tell you it made an update: 
+And a message from Bhugo telling you it made an update: 
+
 ![](../assets/imgs/bhugo-updated.png?raw=true)
 
 
