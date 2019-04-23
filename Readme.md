@@ -52,24 +52,24 @@ Substitute your `username` in the `DATABASE` variable - this is where Bear store
 **Example set up:**
 
 Configure a .`bhugo` file:
-![](../assets/bhugo-file.png?raw=true)
+![](../assets/imgs/bhugo-file.png?raw=true)
 
 Start up Bhugo from the same directory where your `.bhugo` file is:
 
-![](../assets/bhugo-start.png?raw=true)
+![](../assets/imgs/bhugo-start.png?raw=true)
 
 
 Make some changes to an existing note, with hashtags prefixed with the `NOTE_TAG` value from the `.bhugo` file:
 
-![](../assets/bhugo-changes.png?raw=true)
+![](../assets/imgs/bhugo-changes.png?raw=true)
 
 
 You should see the change reflected in your Hugo content file:
-![](../assets/bhugo-content.png?raw=true)
+![](../assets/imgs/bhugo-content.png?raw=true)
 
 
 And a message from Bhugo tell you it made an update: 
-![](../assets/bhugo-updated.png?raw=true)
+![](../assets/imgs/bhugo-updated.png?raw=true)
 
 
 ## Contributing
