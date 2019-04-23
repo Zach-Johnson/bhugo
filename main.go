@@ -105,7 +105,7 @@ func main() {
 }
 
 func checkBear(wg *sync.WaitGroup, done <-chan bool, db *sql.DB, interval time.Duration, notesChan chan<- note, noteTag string) {
-	log.Info("Starting CheckBear")
+	log.Debug("Starting CheckBear")
 
 	defer wg.Done()
 
@@ -145,7 +145,7 @@ func checkBear(wg *sync.WaitGroup, done <-chan bool, db *sql.DB, interval time.D
 }
 
 func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timeFormat, noteTag, hugoDir, contentDir, imageDir string, tmpl *template.Template) {
-	log.Info("Starting UpdateHugo")
+	log.Debug("Starting UpdateHugo")
 	defer wg.Done()
 
 	for {

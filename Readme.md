@@ -7,12 +7,12 @@ Bhugo will monitor a directory of Bear notes based off of a configurable tag pre
 Bhugo does it’s best to stay out of your way, with only a few requirements for how you write your notes:
 - The first line of your note is treated as the title and is used to create the Hugo files and insert the title into the Hugo front matter - a note titled `My Great Post` will generate a file called `my-great-post.md`.
 - The second line of your note is expected to be hashtags (and optionally other text), which will correlate to Hugo categories in the front matter.
-- You can insert images into your Bear notes and they will be formatted to match the configurable environment variable designating the image directory in your Hugo blog - so save your images in your Hugo site as you would normally.
+- You can insert images into your Bear notes and they will be formatted to match the configurable environment variable designating the image directory in your Hugo blog - so save your images in your Hugo site as you would normally and then insert them directly into your Bear note.
 - The `draft` tag has special meaning and will specifically mark the post as a draft in the Hugo front matter, for example `#blog/draft`.
 
 - - - -
 ## **Warning**
-Bhugo will **blow away** an existing file in the `CONTENT_DIR` if it already exists. For example, if you title a Bear note `My New Post` and there is an existing file called `my-new-post.md` that file will be truncated and replaced with the content from your Bear note.
+Bhugo will **blow away** an existing file in the `CONTENT_DIR` directory if it already exists. For example, if you title a Bear note `My New Post` and there is an existing file called `my-new-post.md` that file will be truncated and replaced with the content from your Bear note.
 
 - - - -
 
@@ -39,19 +39,20 @@ Substitute your `username` in the `DATABASE` variable - this is where Bear store
 
 `HUGO_DIR` is the root directory of your Hugo blog.
 
-`CONTENT_DIR` is the output directory (relative to the `HUGO_DIR` that Bhugo will save posts to.
+`CONTENT_DIR` is the output directory relative to the `HUGO_DIR` that Bhugo will save posts to.
 
 `IMAGE_DIR` is the image directory relative to `HUGO_DIR/static`.
 
 `NOTE_TAG` is the tag prefix in Bear that Bhugo will monitor.
 
-`INTERVAL` is how often (in seconds) Bhugo will check for changes to Bear notes.
+`INTERVAL` is how often in seconds Bhugo will check for changes to Bear notes.
 
 - - - -
 
 **Example set up:**
 
 Configure a .`bhugo` file:
+
 ![](../assets/imgs/bhugo-file.png?raw=true)
 
 Start up Bhugo from the same directory where your `.bhugo` file is:
