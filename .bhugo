@@ -1,0 +1,6 @@
+INTERVAL=1
+HUGO_DIR=/Users/<username>/my-awesome-blog
+CONTENT_DIR=content/blog
+IMAGE_DIR=/img/posts
+NOTE_TAG=blog
+DATABASE="/Users/<username>/Library/Group Containers/9K33E3U3T4.net.shinyfrog.bear/Application Data/database.sqlite"
