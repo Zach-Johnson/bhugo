@@ -1,4 +1,4 @@
-module bear-to-hugo
+module bhugo
 
 go 1.12
 
