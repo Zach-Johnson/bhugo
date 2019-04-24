@@ -167,7 +167,7 @@ func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timeFor
 			scanTags(lines[1], &n, noteTag)
 
 			for _, c := range n.Categories {
-				if strings.Contains(c, "draft") {
+				if strings.Contains(strings.ToLower(c), "draft") {
 					n.Draft = true
 				}
 			}

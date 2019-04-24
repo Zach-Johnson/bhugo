@@ -5,6 +5,7 @@ Bhugo is a simple tool written in Go that transforms [Bear](https://bear.app/) n
 Bhugo will monitor a directory of Bear notes based off of a configurable tag prefix. For example, if you prefix all your Bear notes as `#blog`  ( `#blog/finance,  #blog/life`  etc.), configure Bhugo to monitor the `blog` prefix.
 
 Bhugo does it’s best to stay out of your way, with only a few requirements for how you write your notes:
+- Write your notes in markdown compatibility mode.
 - The first line of your note is treated as the title and is used to create the Hugo files and insert the title into the Hugo front matter - a note titled `My Great Post` will generate a file called `my-great-post.md`.
 - The second line of your note is expected to be hashtags (and optionally other text), which will correlate to Hugo categories in the front matter.
 - You can insert images into your Bear notes and they will be formatted to match the configurable environment variable designating the image directory in your Hugo blog - so save your images in your Hugo site as you would normally and then insert them directly into your Bear note.
