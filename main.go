@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"strings"
@@ -21,26 +22,53 @@ import (
 )
 
 type note struct {
-	Title      string `db:"ZTITLE"`
-	BodyRaw    []byte `db:"ZTEXT"`
-	Body       string
-	Date       string
-	Categories []string
-	Draft      bool
+	Title             string `db:"ZTITLE"`
+	BodyRaw           []byte `db:"ZTEXT"`
+	Body              string
+	Date              string
+	Hashtags          []string
+	CustomFrontMatter []string
+	Categories        bool
+	Tags              bool
+	Draft             bool
 }
 
-var templateRaw = `---
+const templateRaw = `---
 title: "{{ .Title }}"
 date: {{ .Date }}
+
+{{- if .Categories }}
 categories: [ 
-{{- range $i, $c := .Categories -}}
+{{- range $i, $c := .Hashtags -}}
 	{{- if $i -}},{{- end -}}
 	"{{- $c -}}"
 {{- end -}}
 ]
+{{- end }}
+
+{{- if .Tags }}
+tags: [ 
+{{- range $i, $c := .Hashtags -}}
+	{{- if $i -}},{{- end -}}
+	"{{- $c -}}"
+{{- end -}}
+]
+{{- end }}
 draft: {{ .Draft }}
+{{- range $l := .CustomFrontMatter }}
+{{ $l }}
+{{- end }}
 ---
 {{ .Body }}`
+
+// Front matter that Bhguo manages.
+var bhugoFrontMatter = map[string]bool{
+	"title":      true,
+	"date":       true,
+	"categories": true,
+	"tags":       true,
+	"draft":      true,
+}
 
 func main() {
 	log.Info("Bhugo Initializing")
@@ -57,12 +85,18 @@ func main() {
 		ImageDir   string `split_words:"true" default:"/img/posts"`
 		NoteTag    string `split_words:"true" default:"blog"`
 		Database   string `required:"true"`
+		Categories bool   `default:"true"`
+		Tags       bool   `default:"false"`
 	}
 
 	err = envconfig.Process("", &cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Override these defaults with the configuration values.
+	bhugoFrontMatter["categories"] = cfg.Categories
+	bhugoFrontMatter["tags"] = cfg.Tags
 
 	timeFormat := "2006-01-02T15:04:05-07:00"
 	interval := time.Duration(cfg.Interval) * time.Second
@@ -91,7 +125,7 @@ func main() {
 	go checkBear(&wg, done, db, interval, notes, cfg.NoteTag)
 
 	wg.Add(1)
-	go updateHugo(&wg, done, notes, timeFormat, cfg.NoteTag, cfg.HugoDir, cfg.ContentDir, cfg.ImageDir, tmpl)
+	go updateHugo(&wg, done, notes, time.Now, timeFormat, cfg.NoteTag, cfg.HugoDir, cfg.ContentDir, cfg.ImageDir, tmpl, cfg.Categories, cfg.Tags)
 
 	go func() {
 		sig := <-sigs
@@ -144,7 +178,7 @@ func checkBear(wg *sync.WaitGroup, done <-chan bool, db *sql.DB, interval time.D
 	}
 }
 
-func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timeFormat, noteTag, hugoDir, contentDir, imageDir string, tmpl *template.Template) {
+func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timeProvider func() time.Time, timeFormat, noteTag, hugoDir, contentDir, imageDir string, tmpl *template.Template, categories, tags bool) {
 	log.Debug("Starting UpdateHugo")
 	defer wg.Done()
 
@@ -155,7 +189,7 @@ func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timeFor
 			n.BodyRaw = bytes.Replace(n.BodyRaw, []byte("“"), []byte("\""), -1)
 			n.BodyRaw = bytes.Replace(n.BodyRaw, []byte("”"), []byte("\""), -1)
 
-			n.Date = time.Now().Format(timeFormat)
+			n.Date = timeProvider().Format(timeFormat)
 
 			lines := bytes.Split(n.BodyRaw, []byte("\n"))
 			// If there is only a heading and tags continue on.
@@ -164,13 +198,16 @@ func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timeFor
 			}
 
 			// The second line should be the line with tags.
-			scanTags(lines[1], &n, noteTag)
-
-			for _, c := range n.Categories {
+			n.Hashtags = scanTags(lines[1], noteTag)
+			for _, c := range n.Hashtags {
 				if strings.Contains(strings.ToLower(c), "draft") {
 					n.Draft = true
 				}
 			}
+
+			// The Bear hashtags will populate either categories or tags (or both) depending on these bools.
+			n.Categories = categories
+			n.Tags = tags
 
 			// Format images for Hugo.
 			parseImages(lines, imageDir)
@@ -179,7 +216,19 @@ func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timeFor
 			n.Body = string(bytes.Join(lines[2:], []byte("\n")))
 			target := strings.Replace(strings.ToLower(n.Title), " ", "-", -1)
 
-			f, err := os.Create(fmt.Sprintf("%s/%s/%s.md", hugoDir, contentDir, target))
+			fp := fmt.Sprintf("%s/%s/%s.md", hugoDir, contentDir, target)
+
+			cf, err := ioutil.ReadFile(fp)
+			if err != nil && !os.IsNotExist(err) {
+				log.Error(err)
+				continue
+			}
+			// If the file exists, check for any custom front matter to preserve it.
+			if len(cf) > 0 {
+				n.CustomFrontMatter = customFrontMatter(cf)
+			}
+
+			f, err := os.Create(fp)
 			if err != nil {
 				log.Error(err)
 				continue
@@ -199,11 +248,12 @@ func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timeFor
 	}
 }
 
-func scanTags(l []byte, n *note, tag string) {
+func scanTags(l []byte, tag string) []string {
 	start := 0
 	end := 0
 	inHash := false
 	multiWord := false
+	hashtags := []string{}
 	var prev rune
 
 	for i, r := range l {
@@ -238,7 +288,7 @@ func scanTags(l []byte, n *note, tag string) {
 		case r == ' ' && peek == '#' && inHash:
 			inHash = false
 			multiWord = false
-			n.Categories = append(n.Categories, formatTag(l[start:end], tag))
+			hashtags = append(hashtags, formatTag(l[start:end], tag))
 
 		// If this isn't a potential multi-word hash, then keep incrementing the end index.
 		case !multiWord:
@@ -249,8 +299,10 @@ func scanTags(l []byte, n *note, tag string) {
 	}
 
 	if inHash {
-		n.Categories = append(n.Categories, formatTag(l[start:end], tag))
+		hashtags = append(hashtags, formatTag(l[start:end], tag))
 	}
+
+	return hashtags
 }
 
 func parseImages(lines [][]byte, imgDir string) {
@@ -282,6 +334,34 @@ func parseImages(lines [][]byte, imgDir string) {
 			lines[i] = []byte(fmt.Sprintf("![--caption--](%s/%s)", imgDir, imgName))
 		}
 	}
+}
+
+func customFrontMatter(f []byte) []string {
+	lines := bytes.Split(f, []byte("\n"))
+	fm := []string{}
+
+	for i, l := range lines {
+		kv := bytes.Split(l, []byte(":"))
+
+		switch {
+		case i == 0:
+			// First line should be dashes.
+			if !bytes.Equal(l, []byte("---")) {
+				return []string{}
+			}
+
+		// If this line is front matter that Bhguo controls, don't append it.
+		case bhugoFrontMatter[string(kv[0])]:
+			continue
+		case bytes.Equal(l, []byte("---")):
+			return fm
+		default:
+			fm = append(fm, string(l))
+		}
+	}
+
+	// Should not reach this if file is formatted correctly.
+	return []string{}
 }
 
 func formatTag(l []byte, tag string) string {
