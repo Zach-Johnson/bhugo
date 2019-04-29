@@ -94,6 +94,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Override these defaults with the configuration values.
+	bhugoFrontMatter["categories"] = cfg.Categories
+	bhugoFrontMatter["tags"] = cfg.Tags
+
 	timeFormat := "2006-01-02T15:04:05-07:00"
 	interval := time.Duration(cfg.Interval) * time.Second
 
@@ -221,7 +225,7 @@ func updateHugo(wg *sync.WaitGroup, done <-chan bool, notes <-chan note, timePro
 			}
 			// If the file exists, check for any custom front matter to preserve it.
 			if len(cf) > 0 {
-				n.CustomFrontMatter = customFrontMatter(cf, categories, tags)
+				n.CustomFrontMatter = customFrontMatter(cf)
 			}
 
 			f, err := os.Create(fp)
@@ -332,7 +336,7 @@ func parseImages(lines [][]byte, imgDir string) {
 	}
 }
 
-func customFrontMatter(f []byte, cats, tags bool) []string {
+func customFrontMatter(f []byte) []string {
 	lines := bytes.Split(f, []byte("\n"))
 	fm := []string{}
 
@@ -348,13 +352,7 @@ func customFrontMatter(f []byte, cats, tags bool) []string {
 
 		// If this line is front matter that Bhguo controls, don't append it.
 		case bhugoFrontMatter[string(kv[0])]:
-			// Special cases for categories and tags since Bhugo may or may not be managing this front matter.
-			if bytes.Equal(kv[0], []byte("categories")) && !cats {
-				fm = append(fm, string(l))
-			}
-			if bytes.Equal(kv[0], []byte("tags")) && !tags {
-				fm = append(fm, string(l))
-			}
+			continue
 		case bytes.Equal(l, []byte("---")):
 			return fm
 		default:

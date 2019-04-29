@@ -220,13 +220,14 @@ func TestCustomFrontMatter(t *testing.T) {
 title: "Existing"
 date: 2019-04-29T07:55:21-07:00
 draft: false
+custom: abc
 categories: ["blog"]
 tags: ["custom-tag"]
-custom: abc
+custom-2: abcd
 ---
 
 Body Text`),
-			[]string{"tags: [\"custom-tag\"]", "custom: abc"},
+			[]string{"custom: abc", "custom-2: abcd"},
 		},
 		{
 			"no opening dash",
@@ -258,7 +259,7 @@ Body Text`),
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := customFrontMatter(test.in, true, false)
+			got := customFrontMatter(test.in)
 			require.Equal(t, test.exp, got)
 		})
 	}
