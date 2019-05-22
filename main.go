@@ -38,7 +38,7 @@ title: "{{ .Title }}"
 date: {{ .Date }}
 
 {{- if .Categories }}
-categories: [ 
+categories: [
 {{- range $i, $c := .Hashtags -}}
 	{{- if $i -}},{{- end -}}
 	"{{- $c -}}"
@@ -47,7 +47,7 @@ categories: [
 {{- end }}
 
 {{- if .Tags }}
-tags: [ 
+tags: [
 {{- range $i, $c := .Hashtags -}}
 	{{- if $i -}},{{- end -}}
 	"{{- $c -}}"
@@ -79,14 +79,14 @@ func main() {
 	}
 
 	var cfg struct {
-		Interval   int    `default:"1"`
-		HugoDir    string `split_words:"true" required:"true"`
-		ContentDir string `split_words:"true" default:"content/blog"`
-		ImageDir   string `split_words:"true" default:"/img/posts"`
-		NoteTag    string `split_words:"true" default:"blog"`
-		Database   string `required:"true"`
-		Categories bool   `default:"true"`
-		Tags       bool   `default:"false"`
+		Interval   time.Duration `default:"1s"`
+		HugoDir    string        `split_words:"true" required:"true"`
+		ContentDir string        `split_words:"true" default:"content/blog"`
+		ImageDir   string        `split_words:"true" default:"/img/posts"`
+		NoteTag    string        `split_words:"true" default:"blog"`
+		Database   string        `required:"true"`
+		Categories bool          `default:"true"`
+		Tags       bool          `default:"false"`
 	}
 
 	err = envconfig.Process("", &cfg)
@@ -99,7 +99,6 @@ func main() {
 	bhugoFrontMatter["tags"] = cfg.Tags
 
 	timeFormat := "2006-01-02T15:04:05-07:00"
-	interval := time.Duration(cfg.Interval) * time.Second
 
 	db, err := sql.Connect("sqlite3", cfg.Database)
 	if err != nil {
@@ -122,7 +121,7 @@ func main() {
 	log.Infof("Watching Bear tag #%s for changes", cfg.NoteTag)
 
 	wg.Add(1)
-	go checkBear(&wg, done, db, interval, notes, cfg.NoteTag)
+	go checkBear(&wg, done, db, cfg.Interval, notes, cfg.NoteTag)
 
 	wg.Add(1)
 	go updateHugo(&wg, done, notes, time.Now, timeFormat, cfg.NoteTag, cfg.HugoDir, cfg.ContentDir, cfg.ImageDir, tmpl, cfg.Categories, cfg.Tags)

@@ -1,4 +1,4 @@
-INTERVAL=1
+INTERVAL=1s
 HUGO_DIR=/Users/<username>/my-awesome-blog
 CONTENT_DIR=content/blog
 IMAGE_DIR=/img/posts
