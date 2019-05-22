@@ -48,7 +48,8 @@ Substitute your `username` in the `DATABASE` variable - this is where Bear store
 
 `NOTE_TAG` is the tag prefix in Bear that Bhugo will monitor.
 
-`INTERVAL` is how often in seconds Bhugo will check for changes to Bear notes.
+`INTERVAL` is how often Bhugo will check for changes to Bear notes.
+Valid values given by [time.Duration](https://golang.org/pkg/time/#ParseDuration).
 
 `CATEGORIES` is a boolean value indicating that Bhguo will treat Bear hashtags as Hugo categories in the front matter.
 
