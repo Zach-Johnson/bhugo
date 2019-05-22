@@ -18,7 +18,7 @@ Bhugo will **blow away** the body of an existing file in the `CONTENT_DIR` direc
 - - - -
 
 ## Installation
-- [Install Go 1.11+](https://golang.org/dl/) 
+- [Install Go 1.11+](https://golang.org/dl/)
 - `go get github.com/Zach-Johnson/bhugo`
 
 ## Configuration
@@ -33,7 +33,7 @@ HUGO_DIR=/Users/<username>/my-awesome-blog
 CONTENT_DIR=content/blog
 IMAGE_DIR=/img/posts
 NOTE_TAG=blog
-INTERVAL=1
+INTERVAL=1s
 CATEGORIES=true
 TAGS=false
 ```
@@ -48,7 +48,8 @@ Substitute your `username` in the `DATABASE` variable - this is where Bear store
 
 `NOTE_TAG` is the tag prefix in Bear that Bhugo will monitor.
 
-`INTERVAL` is how often in seconds Bhugo will check for changes to Bear notes.
+`INTERVAL` is how often Bhugo will check for changes to Bear notes.
+Valid values given by [time.Duration](https://golang.org/pkg/time/#ParseDuration).
 
 `CATEGORIES` is a boolean value indicating that Bhguo will treat Bear hashtags as Hugo categories in the front matter.
 
@@ -77,7 +78,7 @@ You should see the change reflected in your Hugo content file:
 ![](../assets/imgs/bhugo-content.png?raw=true)
 
 
-And a message from Bhugo telling you it made an update: 
+And a message from Bhugo telling you it made an update:
 
 ![](../assets/imgs/bhugo-updated.png?raw=true)
 
