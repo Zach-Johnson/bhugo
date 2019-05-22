@@ -18,7 +18,7 @@ Bhugo will **blow away** the body of an existing file in the `CONTENT_DIR` direc
 - - - -
 
 ## Installation
-- [Install Go 1.11+](https://golang.org/dl/) 
+- [Install Go 1.11+](https://golang.org/dl/)
 - `go get github.com/Zach-Johnson/bhugo`
 
 ## Configuration
@@ -33,7 +33,7 @@ HUGO_DIR=/Users/<username>/my-awesome-blog
 CONTENT_DIR=content/blog
 IMAGE_DIR=/img/posts
 NOTE_TAG=blog
-INTERVAL=1
+INTERVAL=1s
 CATEGORIES=true
 TAGS=false
 ```
@@ -77,7 +77,7 @@ You should see the change reflected in your Hugo content file:
 ![](../assets/imgs/bhugo-content.png?raw=true)
 
 
-And a message from Bhugo telling you it made an update: 
+And a message from Bhugo telling you it made an update:
 
 ![](../assets/imgs/bhugo-updated.png?raw=true)
 
